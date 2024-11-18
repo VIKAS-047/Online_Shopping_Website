@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - ShopEase</title>
+    <link rel="stylesheet" href="static/Istyles.css">
+    <link rel="stylesheet" href="static/COstyles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">ShopEase</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+                <li><a href="{{ url_for('products') }}">Products</a></li>
+                {% if session.user_id %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('orders') }}">Orders</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main role="main">
+        <section class="checkout-section">
+            <h2>Checkout</h2>
+
+            <form action="{{ url_for('place_order') }}" method="POST" id="checkoutForm">
+                <div class="checkout-container">
+                    <div class="shipping-details">
+                        <h3>Shipping Details</h3>
+
+                        <div class="form-group">
+                            <label for="fullName">Full Name:</label>
+                            <input type="text" id="fullName" name="fullName" value="{{ user[1] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Shipping Address:</label>
+                            <textarea id="address" name="address" required>{{ user[4] }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mobile">Mobile Number:</label>
+                            <input type="tel" id="mobile" name="mobile" value="{{ user[5] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Payment Method:</label>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="COD" required>
+                                    Cash on Delivery
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="card" required>
+                                    Credit/Debit Card
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="upi" required>
+                                    UPI
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="cardDetails" class="payment-details" style="display: none;">
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number:</label>
+                                <input type="text" id="cardNumber" name="cardNumber">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="expiryDate">Expiry Date:</label>
+                                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cvv">CVV:</label>
+                                    <input type="text" id="cvv" name="cvv">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="upiDetails" class="payment-details" style="display: none;">
+                            <div class="upi-qr">
+                                <img src="static/images/QR.jpg" alt="UPI QR Code">
+                                <br>
+                                <p>UPI ID: shopease@upi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-summary">
+                        <h3>Order Summary</h3>
+                        {% for item in cart_items %}
+                        <div class="order-item">
+                            {{ item[6] }} ({{ item[7] }}) {{ item[4] }} x ₹{{ "%.2f"|format(item[5]) }}
+                        </div>
+                        {% endfor %}
+
+                        <div class="summary-totals">
+                            <div class="summary-row">Subtotal: ₹{{ "%.2f"|format(subtotal) }}</div>
+                            <div class="summary-row">Shipping: ₹{{ "%.2f"|format(shipping) }}</div>
+                            <div class="summary-row">Tax (2.5%): ₹{{ "%.2f"|format(tax) }}</div>
+                            <div class="summary-row total">Total: ₹{{ "%.2f"|format(total) }}</div>
+                        </div>
+
+                        <button type="submit" class="place-order-btn">Place Order</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Us</h4>
+                <p>ShopEase is your one-stop destination for fashion and lifestyle products.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Email: support@shopease.com</p>
+                <p>Phone: 8309321441</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2024 ShopEase. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentOptions = document.querySelectorAll('input[name="payment_method"]');
+            const cardDetails = document.getElementById('cardDetails');
+            const upiDetails = document.getElementById('upiDetails');
+
+            paymentOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    // Hide all payment details first
+                    cardDetails.style.display = 'none';
+                    upiDetails.style.display = 'none';
+
+                    // Show relevant payment details
+                    if (this.value === 'card') {
+                        cardDetails.style.display = 'block';
+                    } else if (this.value === 'upi') {
+                        upiDetails.style.display = 'block';
+                    }
+                });
+            });
+
+            // Form validation
+            document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+                const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+                if (!selectedPayment) {
+                    e.preventDefault();
+                    alert('Please select a payment method');
+                    return;
+                }
+
+                if (selectedPayment.value === 'card') {
+                    const cardNumber = document.getElementById('cardNumber').value;
+                    const expiryDate = document.getElementById('expiryDate').value;
+                    const cvv = document.getElementById('cvv').value;
+
+                    if (!cardNumber || !expiryDate || !cvv) {
+                        e.preventDefault();
+                        alert('Please fill in all card details');
+                        return;
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEase - Your Online Shopping Destination</title>
+    <link rel="stylesheet" href="static/Istyles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">ShopEase</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+                <li><a href="{{ url_for('products') }}">Products</a></li>
+                {% if session.user_id %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        <section class="hero">
+            <h1>Welcome to ShopEase</h1>
+            <p>Discover Amazing Products at Great Prices</p>
+            <a href="{{ url_for('products') }}" class="cta-button">Shop Now</a>
+        </section>
+        <section class="section featured-categories">
+            <h2>Featured Categories</h2>
+            <div class="category-grid">
+                <div class="category-card" onclick="navigateToProducts('Electronics')">
+                    <img src="/static/images/Electronics.jpg" alt="Electronics">
+                    <h3>Electronics</h3>
+                </div>
+                
+                <div class="category-card" onclick="navigateToProducts('Fashion')">
+                    <img src="/static/images/Fashion.jpg" alt="Fashion">
+                    <h3>Fashion</h3>
+                </div>
+                
+                <div class="category-card" onclick="navigateToProducts('Accessories')">
+                    <img src="/static/images/Accessories.jpg" alt="Accessories">
+                    <h3>Accessories</h3>
+                </div>
+            </div>
+        </section>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Us</h4>
+                <p>Your trusted online shopping destination</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Email: contact@shopease.com</p>
+                <p>Phone: 8309321441</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 ShopEase. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+<script>
+    function navigateToProducts(category) {
+    try {
+        const baseUrl = window.location.origin;
+        let url = `${baseUrl}/products`;
+        
+        if (category) {
+            url += `?category=${encodeURIComponent(category)}`;
+        }
+        
+        window.location.href = url;
+        return false; // Prevent default link behavior
+    } catch (error) {
+        console.error('Navigation error:', error);
+        return true; // Allow default link behavior as fallback
+    }
+}
+
+// Debug function to check if script is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Navigation script loaded');
+    
+    // Add click handlers to all category cards
+    document.querySelectorAll('.category-card').forEach(card => {
+        console.log('Found category card:', card);
+    });
+});
+</script>
+
+</body>
+</html>

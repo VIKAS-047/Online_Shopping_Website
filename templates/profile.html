@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ShopEase</title>
+    <link rel="stylesheet" href="static/PRstyles.css">
+    <link rel="stylesheet" href="static/Istyles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">ShopEase</a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('products') }}">Products</a></li>
+                <li><a href="{{ url_for('profile') }}" class="active">Profile</a></li>
+                <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-photo">
+                    {{ user.name[0] | upper }}
+                </div>
+                <h2 class="profile-name">{{ user.name }}</h2>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-group">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Mobile Number</div>
+                    <div class="info-value">{{ user.mobile_no }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Address</div>
+                    <div class="info-value">{{ user.address }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Gender</div>
+                    <div class="info-value">
+                        {% if user.gender == 'M' %}Male
+                        {% elif user.gender == 'F' %}Female
+                        {% else %}Other{% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Age</div>
+                    <div class="info-value">{{ user.age }}</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-bottom">
+            © 2024 ShopEase. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

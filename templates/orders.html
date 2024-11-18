@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - ShopEase</title>
+    <link rel="stylesheet" href="static/Istyles.css">
+    <link rel="stylesheet" href="static/Ostyles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">ShopEase</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+                <li><a href="{{ url_for('products') }}">Products</a></li>
+                {% if session.user_id %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <div>
+        <main role="main">
+            <section class="orders-section">
+                <h2>My Orders</h2>
+    
+                {% if orders %}
+                    <div class="orders-container">
+                        {% for order in orders %}
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div class="order-info">
+                                        <h3>Order #{{ order['order_id'] }}</h3>
+                                        <p>Placed on: {{ order['order_date'].strftime('%B %d, %Y') if order['order_date'] else 'Date not available' }}</p>
+                                        <p>Status: <span class="status-{{ order['order_status'] }}">{{ order['order_status'] }}</span></p>
+                                    </div>
+                                    <div class="order-total">
+                                        <p>Total: ₹{{ "%.2f"|format(order['total_amount']) }}</p>
+                                    </div>
+                                </div>
+    
+                                <div class="order-items">
+                                    {% for item in order['items'] %}
+                                        <div class="order-item">
+                                            <div class="item-details">
+                                                <h4>{{ item['product_name'] }}</h4>
+                                                <p>Size: {{ item['size'] }}</p>
+                                                <p>Quantity: {{ item['quantity'] }}</p>
+                                                <p>Price: ₹{{ "%.2f"|format(item['price_per_unit']) }}</p>
+                                            </div>
+                                            <div class="item-image">
+                                                <img src="{{ item['image_url'] }}" alt="{{ item['product_name'] }}" class="product-thumbnail">
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+    
+                                <div class="order-footer">
+                                    <p>Shipping Address: {{ order['shipping_address'] }}</p>
+                                    <p>Payment Method: {{ order['payment_method'] }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-orders">
+                        <p>You haven't placed any orders yet.</p>
+                        <a href="{{ url_for('products') }}" class="shop-now-btn">Shop Now</a>
+                    </div>
+                {% endif %}
+            </section>
+        </main>
+    
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>ShopEase is your one-stop destination for fashion and lifestyle products.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: support@shopease.com</p>
+                    <p>Phone: 8309321441</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                © 2024 ShopEase. All rights reserved.
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

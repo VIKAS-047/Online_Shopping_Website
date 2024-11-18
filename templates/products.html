@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - ShopEase</title>
+    <link rel="stylesheet" href="static/Pstyles.css">
+    <link rel="stylesheet" href="static/Istyles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{{ url_for('index') }}" class="logo">ShopEase</a>
+            </div>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('products') }}" class="active">Products</a></li>
+                {% if session.user_id %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <main role="main">
+        <section class="products-section">
+            <aside class="filters">
+                <div class="filter-group categories">
+                    <h4>Categories</h4>
+                    <a href="{{ url_for('products') }}" 
+                       class="category-option {% if not selected_category %}active{% endif %}">
+                        All Categories
+                    </a>
+                    {% for category in categories %}
+                    <a href="{{ url_for('products', category=category[1]) }}" 
+                       class="category-option {% if selected_category == category[1] %}active{% endif %}">
+                        {{ category[1] }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <img src="{{ product[9] }}" 
+                         alt="{{ product[1]|default('Product Image', true) }}"
+                         class="product-image"
+                         onerror="this.src='/static/images/placeholder.jpg'">
+                    
+                    <div class="product-info">
+                        <h3>{{ product[1]|default('Untitled Product', true) }}</h3>
+                        <div class="price">₹{{ "%.2f"|format(product[3]|default(0.0)) }}</div>
+                        
+                        <form action="{{ url_for('add_to_cart') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product[0] }}">
+                            
+                            <div class="size-selection">
+                                <label for="size-{{ product[0] }}">Size:</label>
+                                {% if product[8] and product[8]|length > 0 %}
+                                    <select name="size_id" id="size-{{ product[0] }}" required>
+                                        <option value="">Select Size</option>
+                                        {% for size in product[8] %}
+                                            {% if size and size.id and size.size is not none %}
+                                                <option value="{{ size.id }}" 
+                                                        {% if size.stock is defined and size.stock <= 0 %}disabled{% endif %}>
+                                                    {{ size.size }} 
+                                                    ({{ size.stock|default(0) }} in stock)
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                {% else %}
+                                    <p class="error-message">No sizes available</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="quantity-selection">
+                                <label for="quantity-{{ product[0] }}">Quantity:</label>
+                                <input type="number" 
+                                       name="quantity" 
+                                       id="quantity-{{ product[0] }}"
+                                       value="1" 
+                                       min="1" 
+                                       max="10" 
+                                       required>
+                            </div>
+                            
+                            <button type="submit" class="add-to-cart" 
+                                    {% if not product[8] or product[8]|length == 0 %}disabled{% endif %}>
+                                {% if product[8] and product[8]|length > 0 %}
+                                    Add to Cart
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ShopEase. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle quantity input validation
+            const quantityInputs = document.querySelectorAll('input[type="number"]');
+            quantityInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const max = parseInt(this.max);
+                    const min = parseInt(this.min);
+                    const value = parseInt(this.value);
+
+                    if (value > max) this.value = max;
+                    if (value < min) this.value = min;
+                });
+            });
+
+            // Handle size selection and stock validation
+            const sizeSelects = document.querySelectorAll('.size-select');
+            sizeSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const stock = parseInt(selectedOption.dataset.stock);
+                    const quantityInput = this.closest('form').querySelector('input[name="quantity"]');
+                    
+                    quantityInput.max = Math.min(stock, 10);
+                    if (parseInt(quantityInput.value) > quantityInput.max) {
+                        quantityInput.value = quantityInput.max;
+                    }
+                });
+            });
+
+            // Initialize max quantities based on initial size selection
+            sizeSelects.forEach(select => {
+                const event = new Event('change');
+                select.dispatchEvent(event);
+            });
+        });
+    </script>
+</body>
+</html>

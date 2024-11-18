@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - ShopEase</title>    
+    <link rel="stylesheet" href="static/Istyles.css">
+    <link rel="stylesheet" href="static/Cstyles.css">
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">ShopEase</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('products') }}">Products</a></li>
+                {% if 'user_id' in session %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                    <li><a href="{{ url_for('cart') }}" class="active">Cart</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main role="main">
+        <section class="cart-section">
+            <h2>Shopping Cart</h2>
+    
+            <div class="cart-container">
+                {% if cart_items %}
+                    <div class="cart-items">
+                        {% for item in cart_items %}
+                            <div class="cart-item">
+                                {% if item[8] %}
+                                <img src="{{ item[8] }}" alt="{{ item[3] }}" class="product-image">
+                                {% else %}
+                                <img src="/static/images/placeholder.jpg" alt="{{ item[3] }}" class="product-image">
+                                {% endif %}
+                                
+                                <div class="item-details">
+                                    <h3>{{ item[3] }}</h3>
+                                    <p>Size: {{ item[5] }}</p>
+                                    <p>Price: ₹{{ "%.2f"|format(item[6]) }}</p>
+                                </div>
+    
+                                <div class="quantity-controls">
+                                    <form action="{{ url_for('update_cart') }}" method="POST">
+                                        <input type="hidden" name="cart_item_id" value="{{ item[0] }}">
+                                        <input type="number" name="quantity" value="{{ item[4] }}" min="0" max="99">
+                                        <button type="submit">Update</button>
+                                    </form>
+                                    <form action="{{ url_for('update_cart') }}" method="POST">
+                                        <input type="hidden" name="cart_item_id" value="{{ item[0] }}">
+                                        <input type="hidden" name="quantity" value="0">
+                                        <button type="submit">Remove</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+    
+                    <div class="cart-summary">
+                        <h3>Order Summary</h3>
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>₹{{ "%.2f"|format(subtotal) }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span>₹{{ "%.2f"|format(shipping) }}</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span>₹{{ "%.2f"|format(total) }}</span>
+                        </div>
+                        <a href="{{ url_for('checkout') }}" class="checkout-button">Proceed to Checkout</a>
+                    </div>
+                {% else %}
+                    <div class="empty-cart">
+                        <p>Your cart is empty</p>
+                        <a href="{{ url_for('products') }}" class="continue-shopping">Continue Shopping</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Us</h4>
+                <p>ShopEase is your one-stop destination for fashion and lifestyle products.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Email: support@shopease.com</p>
+                <p>Phone: 8309321441</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 ShopEase. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Quantity controls functionality
+        document.querySelectorAll('.quantity-controls').forEach(control => {
+            const input = control.querySelector('.quantity-input');
+            const decreaseBtn = control.querySelector('.decrease');
+            const increaseBtn = control.querySelector('.increase');
+
+            decreaseBtn.addEventListener('click', () => {
+                const currentValue = parseInt(input.value);
+                if (currentValue > 1) {
+                    input.value = currentValue - 1;
+                }
+            });
+
+            increaseBtn.addEventListener('click', () => {
+                const currentValue = parseInt(input.value);
+                if (currentValue < 10) {
+                    input.value = currentValue + 1;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
