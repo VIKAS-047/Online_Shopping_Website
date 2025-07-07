@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'  # Replace with your MySQL username
-app.config['MYSQL_PASSWORD'] = 'Meghana@685'  # Replace with your MySQL password
+app.config['MYSQL_PASSWORD'] = 'saraswathi@143'  # Replace with your MySQL password
 app.config['MYSQL_DB'] = 'PROJECT'
 
 # Initialize MySQL
